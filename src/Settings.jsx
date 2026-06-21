@@ -1,4 +1,4 @@
-/* Settings.jsx — the standard-HA config surface (box manager, schedules,
+/* Settings.jsx - the standard-HA config surface (box manager, schedules,
    appearance). All entity selectors are native ha-entity-picker. No HA
    connection config: we run inside HA and use the provided hass. */
 const { useState: useStateS } = React;
@@ -39,12 +39,22 @@ function SlotRow({ slot, cfg, hass, onSet }) {
         </div>
       </div>
       {slot.energyTracking && c.enabled && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '12px 0 2px 48px' }}>
-          <window.Icon name="bolt" size={16} style={{ color: 'var(--warning)' }} />
-          <span style={{ fontSize: 13, color: 'var(--text-2)', width: 120, flexShrink: 0 }}>Energy sensor</span>
-          <div style={{ flex: 1 }}>
-            <window.HaEntityPicker hass={hass} value={c.energySensor || ''} domains={SENSOR_DOMAINS}
-              onChange={(v) => onSet(slot.key, { energySensor: v })} />
+        <div style={{ margin: '12px 0 2px 48px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <window.Icon name="bolt" size={16} style={{ color: 'var(--warning)' }} />
+            <span style={{ fontSize: 13, color: 'var(--text-2)', width: 120, flexShrink: 0 }}>Energy sensor (kWh)</span>
+            <div style={{ flex: 1 }}>
+              <window.HaEntityPicker hass={hass} value={c.energySensor || ''} domains={SENSOR_DOMAINS}
+                onChange={(v) => onSet(slot.key, { energySensor: v })} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <window.Icon name="bolt" size={16} style={{ color: 'var(--text-3)' }} />
+            <span style={{ fontSize: 13, color: 'var(--text-2)', width: 120, flexShrink: 0 }}>Power sensor (W)</span>
+            <div style={{ flex: 1 }}>
+              <window.HaEntityPicker hass={hass} value={c.powerEntity || ''} domains={SENSOR_DOMAINS}
+                onChange={(v) => onSet(slot.key, { powerEntity: v })} />
+            </div>
           </div>
         </div>
       )}

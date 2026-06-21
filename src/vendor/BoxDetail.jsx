@@ -1,4 +1,4 @@
-/* BoxDetail.jsx — individual grow box view */
+/* BoxDetail.jsx - individual grow box view */
 const { useState: useStateD } = React;
 
 function ControlRow({ slot, box, schedules, onToggle }) {
@@ -21,7 +21,7 @@ function ControlRow({ slot, box, schedules, onToggle }) {
       {sched ? (
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Schedule · {sched.name.replace(/.*—\s*/, '')}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Schedule · {sched.name.replace(/.*-\s*/, '')}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)' }}>{window.GROW.ratio(sched.hours)}</span>
           </div>
           <window.TimelineStrip hours={off ? Array(24).fill(false) : sched.hours} type={slot.schedType} height={16} />
@@ -29,7 +29,7 @@ function ControlRow({ slot, box, schedules, onToggle }) {
       ) : <div style={{ flex: 1 }} />}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 700, width: 30, textAlign: 'right',
-          color: on ? (slot.key === 'light' ? 'var(--warning)' : 'var(--success)') : 'var(--text-3)' }}>{off ? '—' : on ? 'ON' : 'OFF'}</span>
+          color: on ? (slot.key === 'light' ? 'var(--warning)' : 'var(--success)') : 'var(--text-3)' }}>{off ? '-' : on ? 'ON' : 'OFF'}</span>
         <window.Toggle on={on} disabled={off} kind={slot.key === 'light' ? 'light' : 'success'}
           onChange={() => onToggle(box.id, slot.key)} />
       </div>
@@ -119,12 +119,13 @@ function EStat({ label, value, unit, sub, accent }) {
   );
 }
 
-function EnergyCard({ box, energy }) {
+function EnergyCard({ box, energy, onResetEnergy }) {
   const off = !box.master;
   const cfg = box.config.light;
   const kWh = box.live.lightEnergy || 0;
   const watt = box.live.lightWatt || 0;
-  const powerNow = (off || !box.live.light) ? 0 : watt;
+  // measured power from the mapped power sensor (ground truth), zeroed when box is off
+  const powerNow = off ? 0 : watt;
   const hasPrice = energy && energy.priceSensor && energy.price != null;
   const cost = hasPrice ? kWh * energy.price : null;
   const cur = (energy && energy.currency) || '€';
@@ -135,12 +136,17 @@ function EnergyCard({ box, energy }) {
         <window.Icon name="bolt" size={18} style={{ color: 'var(--warning)' }} />
         <h3 style={{ fontSize: 15, fontWeight: 700 }}>Light energy &amp; cost</h3>
         <span className="mono" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-3)' }}>{cfg.energySensor}</span>
+        {onResetEnergy && (
+          <button className="btn btn--ghost btn--sm" title="Reset consumed energy to 0" onClick={() => onResetEnergy(box.id)}>
+            <window.Icon name="sync" size={15} />Reset
+          </button>
+        )}
       </div>
       <div style={{ display: 'flex', gap: 34, flexWrap: 'wrap' }}>
         <EStat label="Power now" value={powerNow} unit="W" accent={powerNow ? 'var(--warning)' : 'var(--text-3)'}
           sub={(box.live.light && !off) ? 'Light on' : 'Light off'} />
         <EStat label="Consumed since start" value={kWh.toFixed(1)} unit="kWh" sub={'≈ ' + (kWh / days).toFixed(2) + ' kWh / day'} />
-        <EStat label="Cost since start" value={hasPrice ? cur + cost.toFixed(2) : '—'} accent="var(--success)"
+        <EStat label="Cost since start" value={hasPrice ? cur + cost.toFixed(2) : '-'} accent="var(--success)"
           sub={hasPrice ? ('at ' + cur + energy.price.toFixed(2) + ' / kWh') : 'Set a price sensor in Admin'} />
       </div>
     </div>
@@ -162,7 +168,7 @@ function TargetInput({ box, onSetTarget }) {
   );
 }
 
-function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster, onSetPhase, onToggleControl, onRename, onDelete, onSetTarget }) {
+function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster, onSetPhase, onToggleControl, onRename, onDelete, onSetTarget, onResetEnergy }) {
   const [editName, setEditName] = useStateD(false);
   const [nameVal, setNameVal] = useStateD(box.name);
   const off = !box.master;
@@ -224,8 +230,8 @@ function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             <span className="field-label" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>Light schedule</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 38 }}>
-              <window.Chip variant="accent" icon="schedule">{lightSched ? window.GROW.ratio(lightSched.hours) : '—'}</window.Chip>
-              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{lightSched ? lightSched.name.replace(/.*—\s*/, '') + ' light / dark' : 'none'}</span>
+              <window.Chip variant="accent" icon="schedule">{lightSched ? window.GROW.ratio(lightSched.hours) : '-'}</window.Chip>
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{lightSched ? lightSched.name.replace(/.*-\s*/, '') + ' light / dark' : 'none'}</span>
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 16 }} />
@@ -276,7 +282,7 @@ function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster
 
       {/* light energy & cost */}
       {box.config.light && box.config.light.enabled && box.config.light.energySensor && (
-        <EnergyCard box={box} energy={energy} />
+        <EnergyCard box={box} energy={energy} onResetEnergy={onResetEnergy} />
       )}
 
       {/* controls */}

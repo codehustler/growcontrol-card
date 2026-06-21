@@ -1,4 +1,4 @@
-/* charts.jsx — hand-rolled SVG charts + 24h schedule visuals */
+/* charts.jsx - hand-rolled SVG charts + 24h schedule visuals */
 const { useState: useStateC, useRef: useRefC } = React;
 
 /* Area chart with optional target line. data = array of numbers. */
@@ -53,7 +53,7 @@ function TimelineStrip({ hours, type, height, showLabels }) {
     <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', height: h, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
         {hours.map((on, i) => (
-          <div key={i} title={`${String(i).padStart(2, '0')}:00 — ${on ? 'On' : 'Off'}`}
+          <div key={i} title={`${String(i).padStart(2, '0')}:00 - ${on ? 'On' : 'Off'}`}
             style={{ flex: 1, background: on ? colorOn : 'var(--bg-2)',
               borderRight: i < 23 ? '1px solid rgba(0,0,0,.25)' : 'none', transition: 'background .15s' }} />
         ))}
@@ -67,7 +67,7 @@ function TimelineStrip({ hours, type, height, showLabels }) {
   );
 }
 
-/* Editable 24h hour grid — click or drag to paint on/off. */
+/* Editable 24h hour grid - click or drag to paint on/off. */
 function HourGrid({ hours, onChange, type }) {
   const paintRef = useRefC(null);
   const colorOn = type === 'light' ? 'var(--warning)' : type === 'fan' ? 'var(--accent)' : type === 'pump' ? 'var(--cyan)' : 'var(--success)';

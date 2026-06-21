@@ -1,4 +1,4 @@
-/* components.jsx — shared UI primitives for Grow Box Manager */
+/* components.jsx - shared UI primitives for Grow Box Manager */
 const { useState, useEffect, useRef } = React;
 
 function Icon({ name, size, style, className }) {

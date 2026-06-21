@@ -1,4 +1,4 @@
-/* App.jsx — shell + routing + live HA wiring.
+/* App.jsx - shell + routing + live HA wiring.
    Proper dashboard view: no sidebar, no floating tweaks popup. Custom UI for
    the grow visuals (overview + detail); a standard Settings view holds the box
    manager (native ha-entity-picker config), schedules, and appearance. */
@@ -11,9 +11,10 @@ function App() {
 
   const hass = React.useSyncExternalStore(GC().hassStore.subscribe, GC().hassStore.get);
   const appState = React.useSyncExternalStore(GC().appStore.subscribe, GC().appStore.get);
-  const storeBoxes = appState.boxes;
-  const schedules = appState.schedules;
-  const energy = appState.energy;
+  const ready = !!appState && !appState.__error;
+  const storeBoxes = ready ? (appState.boxes || []) : [];
+  const schedules = ready ? (appState.schedules || []) : [];
+  const energy = ready ? (appState.energy || {}) : {};
   const connected = !!hass;
 
   const [hist, setHist] = useS({});
@@ -41,6 +42,29 @@ function App() {
     const timer = setInterval(run, 300000);
     return () => { cancelled = true; clearInterval(timer); };
   }, [idsKey, connected]);
+
+  // Auto-zero energy: when a box has an energy sensor but no baseline yet, set
+  // the baseline to the current reading (so it shows 0 instead of the lifetime total).
+  useE(() => {
+    const h = hassRef.current; if (!h) return;
+    storeBoxes.forEach((b) => {
+      const l = b.config.light;
+      if (!l || !l.enabled || !l.energySensor) return;
+      const patch = {};
+      // auto-zero: baseline = current reading on first sight
+      if (l.energyBaseline === undefined || l.energyBaseline === null) {
+        const s = h.states[l.energySensor];
+        const cur = s ? Number(s.state) : null;
+        if (Number.isFinite(cur)) patch.energyBaseline = cur;
+      }
+      // auto-detect the matching power sensor (..._energy -> ..._power) if unset
+      if (!l.powerEntity) {
+        const guess = l.energySensor.replace(/_energy$/, '_power');
+        if (guess !== l.energySensor && h.states[guess]) patch.powerEntity = guess;
+      }
+      if (Object.keys(patch).length) patchConfig(b.id, { light: { ...l, ...patch } });
+    });
+  }, [storeBoxes, connected]);
 
   const [view, setView] = useS(() => GC().initialView || { name: 'overview', boxId: null });
   const [settingsTab, setSettingsTab] = useS('boxes');
@@ -100,7 +124,7 @@ function App() {
     blank.phaseEntity = ''; blank.startEntity = ''; blank.tempTargetEntity = '';
     const n = (GC().appStore.get().boxes.length || 0) + 1;
     GC().appStore.set((s) => ({ ...s, boxes: [...s.boxes, { id, name: 'Growbox ' + n, master: true, startDate: new Date().toISOString().slice(0, 10), config: blank }] }));
-    flash('Box added — map its entities below');
+    flash('Box added - map its entities below');
   };
 
   // ---- device actions (HA services) ----
@@ -121,11 +145,33 @@ function App() {
     const num = Number(value);
     if (ent && Number.isFinite(num)) callSvc(ent, 'set_value', { value: num });
   };
+  // Zero the per-box energy counter by setting its baseline to the current reading.
+  const resetEnergy = (id) => {
+    const b = storeBoxes.find((x) => x.id === id);
+    const ent = b && b.config.light && b.config.light.energySensor;
+    const h = GC().hassStore.get();
+    const cur = (ent && h && h.states[ent]) ? Number(h.states[ent].state) : 0;
+    if (b) patchConfig(id, { light: { ...b.config.light, energyBaseline: Number.isFinite(cur) ? cur : 0 } });
+    flash('Energy counter reset');
+  };
 
   const delBox = (id) => setConfirm({ id, name: (storeBoxes.find((b) => b.id === id) || {}).name });
   const openSettings = (tab) => { setSettingsTab(tab || 'boxes'); navOpen({ name: 'settings', boxId: null }); };
 
   const current = boxes.find((b) => b.id === view.boxId);
+
+  if (!appState) {
+    return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 14 }}>Loading…</div>;
+  }
+  if (appState.__error) {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--text-2)', textAlign: 'center', padding: 24 }}>
+        <window.Icon name="cloud_off" size={28} style={{ color: 'var(--text-3)' }} />
+        <div style={{ fontWeight: 700 }}>GrowControl integration not found</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Add the GrowControl integration in Settings → Devices &amp; Services, then reload.</div>
+      </div>
+    );
+  }
 
   const SettingsGear = () => (
     <window.IconBtn icon="settings" title="Settings" onClick={() => openSettings('boxes')} />
@@ -160,7 +206,7 @@ function App() {
             onBack={navBack}
             onConfigure={() => openSettings('boxes')}
             onToggleMaster={toggleMaster} onSetPhase={setPhase} onToggleControl={toggleControl}
-            onRename={rename} onDelete={delBox} onSetTarget={setTarget} />
+            onRename={rename} onDelete={delBox} onSetTarget={setTarget} onResetEnergy={resetEnergy} />
         )}
 
         {view.name === 'settings' && (

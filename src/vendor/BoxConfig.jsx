@@ -1,4 +1,4 @@
-/* BoxConfig.jsx — map a box's slots to Home Assistant entities */
+/* BoxConfig.jsx - map a box's slots to Home Assistant entities */
 const { useState: useStateBC } = React;
 
 function ConfigRow({ slot, draft, schedules, onSet }) {
@@ -19,13 +19,13 @@ function ConfigRow({ slot, draft, schedules, onSet }) {
       </div>
       <div style={{ flex: 1, display: 'flex', gap: 10, minWidth: 0 }}>
         <window.Select value={c.entity} onChange={(v) => onSet(slot.key, { entity: v, enabled: v ? c.enabled : false })} style={{ flex: 2 }}>
-          <option value="">— Not mapped —</option>
+          <option value="">- Not mapped -</option>
           {opts.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
         </window.Select>
         {slot.schedulable && (
           <window.Select value={c.schedule || ''} onChange={(v) => onSet(slot.key, { schedule: v })} style={{ flex: 1 }}>
             <option value="">No schedule</option>
-            {schedOpts.map((s) => <option key={s.id} value={s.id}>{s.name.replace(/.*—\s*/, '')} ({window.GROW.ratio(s.hours)})</option>)}
+            {schedOpts.map((s) => <option key={s.id} value={s.id}>{s.name.replace(/.*-\s*/, '')} ({window.GROW.ratio(s.hours)})</option>)}
           </window.Select>
         )}
       </div>
@@ -41,7 +41,7 @@ function ConfigRow({ slot, draft, schedules, onSet }) {
         <window.Icon name="bolt" size={16} style={{ color: 'var(--warning)' }} />
         <span style={{ fontSize: 13, color: 'var(--text-2)', width: 138, flexShrink: 0 }}>Energy sensor (kWh)</span>
         <window.Select value={c.energySensor || ''} onChange={(v) => onSet(slot.key, { energySensor: v })} style={{ flex: 1 }}>
-          <option value="">— None (no energy tracking) —</option>
+          <option value="">- None (no energy tracking) -</option>
           {energyOpts.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
         </window.Select>
       </div>

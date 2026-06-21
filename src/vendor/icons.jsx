@@ -1,4 +1,4 @@
-/* icons.jsx — inline SVG icon set (Material-style, filled). Offline-proof. */
+/* icons.jsx - inline SVG icon set (Material-style, filled). Offline-proof. */
 const cc = 'currentColor';
 const ICONS = {
   grid_view: (<g fill={cc}><rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/></g>),

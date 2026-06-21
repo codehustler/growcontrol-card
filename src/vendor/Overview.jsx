@@ -1,4 +1,4 @@
-/* Overview.jsx — grid/list of grow boxes */
+/* Overview.jsx - grid/list of grow boxes */
 const { useState: useStateO } = React;
 
 function liveControls(box) {
@@ -69,8 +69,8 @@ function BoxCard({ box, schedules, energy, density, onOpen, onToggleMaster }) {
       {rich && lightSched && cfg.light && cfg.light.enabled && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, letterSpacing: '.03em', textTransform: 'uppercase' }}>Light · {lightSched.name.split('—')[0].trim() === box.name ? '' : ''}{window.GROW.ratio(lightSched.hours)}</span>
-            <span style={{ fontSize: 11, color: box.live.light ? 'var(--warning)' : 'var(--text-3)', fontWeight: 700 }}>{off ? '—' : box.live.light ? 'ON NOW' : 'OFF NOW'}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, letterSpacing: '.03em', textTransform: 'uppercase' }}>Light · {lightSched.name.split('-')[0].trim() === box.name ? '' : ''}{window.GROW.ratio(lightSched.hours)}</span>
+            <span style={{ fontSize: 11, color: box.live.light ? 'var(--warning)' : 'var(--text-3)', fontWeight: 700 }}>{off ? '-' : box.live.light ? 'ON NOW' : 'OFF NOW'}</span>
           </div>
           <window.TimelineStrip hours={off ? Array(24).fill(false) : lightSched.hours} type="light" height={18} />
         </div>

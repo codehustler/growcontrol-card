@@ -1,4 +1,4 @@
-/* index.jsx — bundle entry + custom-element wrapper.
+/* index.jsx - bundle entry + custom-element wrapper.
    Import order matters: globals (React) -> runtime -> adapter -> tweaks ->
    vendor views -> App. Each side-effect import registers onto window.*. */
 import './globals.js';
@@ -33,13 +33,7 @@ function shadowCss() {
 class GrowControlCard extends HTMLElement {
   setConfig(config) {
     this._config = config || {};
-    const seed = {
-      boxes: this._config.boxes || JSON.parse(JSON.stringify(window.GROW.DEFAULT_BOXES)),
-      schedules: this._config.schedules || JSON.parse(JSON.stringify(window.GROW.SEED_SCHEDULES)),
-      energy: this._config.energy || { priceSensor: '', price: null, currency: '€' },
-    };
-    window.__GC.appStore.init(seed);
-    // optional deep-link: open straight to a box's detail view
+    // optional deep-link: open straight to a box's detail view / settings
     window.__GC.initialView = this._config.open_box
       ? { name: 'box', boxId: this._config.open_box }
       : (this._config.open_settings ? { name: 'settings', boxId: null } : { name: 'overview', boxId: null });
@@ -53,6 +47,8 @@ class GrowControlCard extends HTMLElement {
     if (dark) this.setAttribute('data-dark', '');
     else this.removeAttribute('data-dark');
     window.__GC.hassStore.set(hass);
+    // load/persist state via the GrowControl integration (once hass is ready)
+    window.__GC.appStore.connect(hass);
   }
 
   _mount() {
@@ -64,7 +60,6 @@ class GrowControlCard extends HTMLElement {
     mountEl.style.height = this._config.height || '82vh';
     mountEl.style.width = '100%';
     root.appendChild(mountEl);
-    if (window.ensureHaPicker) window.ensureHaPicker();
     window.ReactDOM.createRoot(mountEl).render(window.React.createElement(window.App));
     this._mounted = true;
   }

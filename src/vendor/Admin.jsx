@@ -1,4 +1,4 @@
-/* Admin.jsx — global settings: Home Assistant connection + schedules */
+/* Admin.jsx - global settings: Home Assistant connection + schedules */
 const { useState: useStateA } = React;
 
 function ConnectionPanel({ conn, onChange, energy, onEnergyChange }) {
@@ -60,10 +60,10 @@ function ConnectionPanel({ conn, onChange, energy, onEnergyChange }) {
           </div>
         </div>
         <div>
-          <label className="field-label">Cost per kWh — sensor</label>
+          <label className="field-label">Cost per kWh - sensor</label>
           <window.Select value={energy.priceSensor || ''}
             onChange={(v) => onEnergyChange({ ...energy, priceSensor: v, price: v ? window.GROW.PRICE_VALUES[v] : null })}>
-            <option value="">— No price sensor —</option>
+            <option value="">- No price sensor -</option>
             {window.GROW.HA_ENTITIES.filter((e) => e.unit === '€/kWh').map((e) => (
               <option key={e.id} value={e.id}>{e.name}</option>
             ))}

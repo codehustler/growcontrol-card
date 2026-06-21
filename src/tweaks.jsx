@@ -1,4 +1,4 @@
-/* tweaks.jsx — HA-friendly replacement for the prototype's design-host tweaks.
+/* tweaks.jsx - HA-friendly replacement for the prototype's design-host tweaks.
    Same window.* API the App expects (useTweaks, TweaksPanel, TweakSection,
    TweakRadio, TweakColor) but: values persist to localStorage and the panel is
    opened by its own floating gear button (no claude.ai host messaging). */

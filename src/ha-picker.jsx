@@ -1,4 +1,4 @@
-/* ha-picker.jsx — React wrapper around Home Assistant's native <ha-entity-picker>.
+/* ha-picker.jsx - React wrapper around Home Assistant's native <ha-entity-picker>.
    Gives us the standard, filterable, theme-matched entity selector for the
    config UI ("standard for the non-UI parts"). HA lazy-loads that element, so
    we trigger the load via loadCardHelpers + an entities-card config element. */

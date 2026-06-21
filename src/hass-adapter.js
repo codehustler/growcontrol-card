@@ -1,11 +1,11 @@
-/* hass-adapter.js — replaces the prototype's mock data.jsx.
+/* hass-adapter.js - replaces the prototype's mock data.jsx.
    Builds window.GROW from live Home Assistant state instead of seed data.
    - SLOT_CATALOG / PHASES / helpers: same shapes the views expect.
    - HA_ENTITIES / PRICE_VALUES: recomputed from hass on every update.
    - deriveBox(): overlays a stored box's entity map with live hass values,
      producing the { phase, startDate, phaseStart, live } shape the views read. */
 
-/* slot catalog — adds a 'pump' switch slot (the prototype lacked one; the real
+/* slot catalog - adds a 'pump' switch slot (the prototype lacked one; the real
    grow has a water pump). Views iterate the catalog generically, so it renders. */
 const SLOT_CATALOG = [
   { key: 'temp',      label: 'Temperature',        kind: 'sensor', unit: '°C', icon: 'thermostat',  metric: true },
@@ -35,10 +35,10 @@ function cyclePattern(everyOn) {
 }
 
 const SEED_SCHEDULES = [
-  { id: 'veg-light',    name: 'Vegetative — Light',  type: 'light', hours: hoursOn(6, 24) },
-  { id: 'flower-light', name: 'Flowering — Light',   type: 'light', hours: hoursOn(8, 20) },
-  { id: 'fan-day',      name: 'Fan — Continuous Day', type: 'fan',  hours: hoursOn(0, 24) },
-  { id: 'fan-cycle',    name: 'Fan — Hourly Cycle',  type: 'fan',   hours: cyclePattern(true) },
+  { id: 'veg-light',    name: 'Vegetative - Light',  type: 'light', hours: hoursOn(6, 24) },
+  { id: 'flower-light', name: 'Flowering - Light',   type: 'light', hours: hoursOn(8, 20) },
+  { id: 'fan-day',      name: 'Fan - Continuous Day', type: 'fan',  hours: hoursOn(0, 24) },
+  { id: 'fan-cycle',    name: 'Fan - Hourly Cycle',  type: 'fan',   hours: cyclePattern(true) },
 ];
 
 /* Real two-box default, mirroring dashboard-weed exactly (quirks included:
@@ -51,7 +51,7 @@ const DEFAULT_BOXES = [
       temp:      { entity: 'sensor.temperatur_growbox_2_temperature', enabled: true },
       humidity:  { entity: 'sensor.temperatur_growbox_2_humidity', enabled: true },
       substrate: { entity: 'sensor.pflanzensensor_01_soil_moisture', enabled: true },
-      light:     { entity: 'switch.steckdose_grow_light_1', enabled: true, schedule: null, energySensor: '' },
+      light:     { entity: 'switch.steckdose_grow_light_1', enabled: true, schedule: null, energySensor: 'sensor.steckdose_grow_light_1_energy', powerEntity: 'sensor.steckdose_grow_light_1_power' },
       fan:       { entity: '', enabled: false },
       heating:   { entity: 'switch.steckdose_grow_lufter_1', enabled: true },
       pump:      { entity: 'switch.steckdose_grow_waterpump', enabled: true },
@@ -67,7 +67,7 @@ const DEFAULT_BOXES = [
       temp:      { entity: 'sensor.temperatur_growbox_1_temperature', enabled: true },
       humidity:  { entity: 'sensor.temperatur_growbox_1_humidity', enabled: true },
       substrate: { entity: '', enabled: false },
-      light:     { entity: 'switch.steckdose_grow_light_2', enabled: true, schedule: null, energySensor: '' },
+      light:     { entity: 'switch.steckdose_grow_light_2', enabled: true, schedule: null, energySensor: 'sensor.steckdose_grow_light_2_energy', powerEntity: 'sensor.steckdose_grow_light_2_power' },
       fan:       { entity: '', enabled: false },
       heating:   { entity: 'switch.steckdose_3d_drucker', enabled: true },
       pump:      { entity: '', enabled: false },
@@ -115,7 +115,14 @@ function deriveBox(box, hass, hist) {
     heating: onState(hass, ent('heating')),
     pump: onState(hass, ent('pump')),
     lightWatt: numState(hass, cfg.light && cfg.light.powerEntity) ?? 0,
-    lightEnergy: numState(hass, cfg.light && cfg.light.energySensor) ?? 0,
+    // Consumed = current kWh reading minus the per-box baseline (set on first
+    // sight / on Reset), so it counts from zero instead of the plug's lifetime total.
+    lightEnergy: (() => {
+      const raw = numState(hass, cfg.light && cfg.light.enabled ? cfg.light.energySensor : null);
+      const base = cfg.light ? cfg.light.energyBaseline : null;
+      if (raw == null || base == null) return 0;
+      return Math.max(0, Math.round((raw - base) * 1000) / 1000);
+    })(),
     // 24h history fetched by App and keyed by entity id (empty => chart shows
     // "No history available" gracefully).
     tempHist: h[ent('temp')] || [],
