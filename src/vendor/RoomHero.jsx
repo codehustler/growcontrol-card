@@ -1,32 +1,143 @@
-/* RoomHero.jsx - grow room climate + fan control. Visuals upgraded in Phase C. */
+/* RoomHero.jsx - grow room centerpiece hero card with radial gauges + fan control. */
 function RoomHero({ room, onFanToggle, onFanSpeed }) {
   if (!room) return null;
-  const m = (label, val, unit, accent) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</span>
-      <span style={{ fontSize: 30, fontWeight: 700, color: val == null ? 'var(--text-3)' : (accent || 'var(--text)') }}>
-        {val == null ? 'N/A' : val}<span style={{ fontSize: 14, color: 'var(--text-2)' }}>{val == null ? '' : unit}</span>
-      </span>
-    </div>
-  );
+
+  const zone = window.GROW.vpdZone(room.vpd, 'Flowering');
+
+  /* glass / tinted card background - blur where supported, solid fallback */
+  const heroStyle = {
+    position: 'relative',
+    marginBottom: 18,
+    borderRadius: 'var(--r-lg)',
+    padding: '22px 24px 20px',
+    boxShadow: 'var(--elev-2)',
+    overflow: 'hidden',
+    /* solid fallback */
+    background: 'var(--paper)',
+    /* glass tint for browsers that support backdrop-filter */
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+  };
+
+  /* accent tint overlay pseudo-element is approximated with an absolutely
+     positioned inert <div> because inline styles cannot use ::before */
+  const tintStyle = {
+    position: 'absolute',
+    inset: 0,
+    background: 'var(--grad-accent)',
+    opacity: 0.07,
+    pointerEvents: 'none',
+    borderRadius: 'inherit',
+    zIndex: 0,
+  };
+
+  const contentStyle = {
+    position: 'relative',
+    zIndex: 1,
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '16px 28px',
+  };
+
+  const headingStyle = {
+    width: '100%',
+    fontSize: 17,
+    fontWeight: 700,
+    color: 'var(--text)',
+    marginBottom: 4,
+    letterSpacing: '-.01em',
+  };
+
+  /* VPD zone badge shown under the VPD gauge */
+  const zoneBadgeStyle = {
+    fontSize: 11,
+    fontWeight: 700,
+    color: zone.color,
+    textTransform: 'uppercase',
+    letterSpacing: '.06em',
+    marginTop: -2,
+    textAlign: 'center',
+  };
+
+  /* CO2 chip */
+  const co2ChipStyle = {
+    display: 'inline-flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 2,
+    padding: '6px 14px',
+    borderRadius: 'var(--r-pill)',
+    background: 'var(--bg-2, rgba(0,0,0,.06))',
+    border: '1px solid var(--border)',
+  };
+
   const f = room.fan;
+
   return (
-    <div className="card" style={{ padding: 22, marginBottom: 18, display: 'flex', alignItems: 'center', gap: 36, flexWrap: 'wrap' }}>
-      <div style={{ fontSize: 18, fontWeight: 700 }}>{room.name}</div>
-      {m('Temp', room.temp, ' °C', 'var(--warning)')}
-      {m('Humidity', room.humidity, ' %', 'var(--accent)')}
-      {m('VPD', room.vpd, ' kPa', 'var(--success)')}
-      {room.co2 != null && m('CO2', room.co2, ' ppm')}
-      <div style={{ flex: 1 }} />
-      {f.entity && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Fan</span>
-          {f.isSpeed && f.on && (
-            <input type="range" min="0" max="100" value={f.speed} onChange={(e) => onFanSpeed(f.entity, Number(e.target.value))} style={{ width: 120 }} />
-          )}
-          <window.Toggle on={f.on} kind="success" onChange={() => onFanToggle(f.entity)} />
+    <div style={heroStyle}>
+      {/* accent tint overlay */}
+      <div style={tintStyle} aria-hidden="true" />
+
+      <div style={contentStyle}>
+        {/* room name heading */}
+        <div style={headingStyle}>{room.name}</div>
+
+        {/* temperature gauge */}
+        <window.RadialGauge
+          value={room.temp}
+          min={10}
+          max={40}
+          unit=" C"
+          label="Temp"
+          color="var(--warning)"
+          size={124}
+        />
+
+        {/* humidity gauge */}
+        <window.RadialGauge
+          value={room.humidity}
+          min={0}
+          max={100}
+          unit="%"
+          label="Humidity"
+          color="var(--accent)"
+          size={124}
+        />
+
+        {/* VPD gauge + zone badge */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <window.RadialGauge
+            value={room.vpd}
+            min={0}
+            max={2.5}
+            unit=" kPa"
+            label="VPD"
+            color={zone.color}
+            size={124}
+          />
+          {zone.label ? <div style={zoneBadgeStyle}>{zone.label}</div> : null}
         </div>
-      )}
+
+        {/* CO2 chip - only rendered when a value is available */}
+        {room.co2 != null && (
+          <div style={co2ChipStyle}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{room.co2}</span>
+            <span style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>ppm CO2</span>
+          </div>
+        )}
+
+        {/* spacer pushes fan control to the right on wider layouts */}
+        <div style={{ flex: 1, minWidth: 0 }} />
+
+        {/* fan control */}
+        {f && f.entity && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Fan</span>
+            <window.FanControl fan={f} onToggle={onFanToggle} onSpeed={onFanSpeed} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
