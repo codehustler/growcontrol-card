@@ -15,6 +15,7 @@ function App() {
   const storeBoxes = ready ? (appState.boxes || []) : [];
   const schedules = ready ? (appState.schedules || []) : [];
   const energy = ready ? (appState.energy || {}) : {};
+  const rooms = ready ? (appState.rooms || []) : [];
   const connected = !!hass;
 
   const [hist, setHist] = useS({});
@@ -118,6 +119,12 @@ function App() {
   const setSchedules = (next) => GC().appStore.set((s) => ({ ...s, schedules: typeof next === 'function' ? next(s.schedules) : next }));
   const setEnergy = (next) => GC().appStore.set((s) => ({ ...s, energy: typeof next === 'function' ? next(s.energy) : next }));
 
+  const patchRoom = (roomId, partial) => GC().appStore.set((s) => ({
+    ...s, rooms: (s.rooms || []).map((r) => (r.id === roomId ? { ...r, ...partial } : r)),
+  }));
+  const patchRoomSensors = (roomId, partial) => patchRoom(roomId, { sensors: { ...((rooms.find((r) => r.id === roomId) || {}).sensors || {}), ...partial } });
+  const patchRoomControls = (roomId, partial) => patchRoom(roomId, { controls: { ...((rooms.find((r) => r.id === roomId) || {}).controls || {}), ...partial } });
+
   const addBox = () => {
     const id = 'box-' + Date.now();
     const blank = {}; window.GROW.SLOT_CATALOG.forEach((s) => { blank[s.key] = { entity: '', enabled: false }; });
@@ -154,6 +161,11 @@ function App() {
     if (b) patchConfig(id, { light: { ...b.config.light, energyBaseline: Number.isFinite(cur) ? cur : 0 } });
     flash('Energy counter reset');
   };
+
+  const fanToggle = (entity) => callSvc(entity, 'toggle');
+  const fanSpeed = (entity, pct) => callSvc(entity, 'set_percentage', { percentage: pct });
+
+  const roomViews = React.useMemo(() => rooms.map((r) => window.GROW.deriveRoom(r, hass)), [rooms, hass]);
 
   const delBox = (id) => setConfirm({ id, name: (storeBoxes.find((b) => b.id === id) || {}).name });
   const openSettings = (tab) => { setSettingsTab(tab || 'boxes'); navOpen({ name: 'settings', boxId: null }); };
@@ -192,6 +204,7 @@ function App() {
               </div>
               <SettingsGear />
             </div>
+            {roomViews.map((r) => <window.RoomHero key={r.id} room={r} onFanToggle={fanToggle} onFanSpeed={fanSpeed} />)}
             {boxes.length > 0 ? (
               <window.Overview boxes={boxes} schedules={schedules} energy={energy} layout={t.layout} density={t.density}
                 onOpen={(id) => navOpen({ name: 'box', boxId: id })} onToggleMaster={toggleMaster} />
@@ -213,6 +226,7 @@ function App() {
           <window.Settings hass={hass} tab={settingsTab} setTab={setSettingsTab} t={t} setTweak={setTweak}
             boxes={storeBoxes} onAddBox={addBox} onDeleteBox={delBox} onRenameBox={rename} onPatchConfig={patchConfig}
             schedules={schedules} onSchedulesChange={setSchedules} energy={energy} onEnergyChange={setEnergy}
+            rooms={rooms} onRoom={patchRoom} onRoomSensors={patchRoomSensors} onRoomControls={patchRoomControls}
             onBack={navBack} onOpenBox={(id) => navOpen({ name: 'box', boxId: id })} />
         )}
       </main>

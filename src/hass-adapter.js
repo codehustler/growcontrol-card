@@ -157,12 +157,38 @@ function computePrices(hass) {
   return out;
 }
 
+function vpdJs(t, h, offset) {
+  if (t == null || h == null) return null;
+  const svp = (x) => 0.61078 * Math.exp((17.27 * x) / (x + 237.3));
+  return Math.max(0, Math.round((svp(t - (offset ?? 2)) - svp(t) * (h / 100)) * 100) / 100);
+}
+
+function deriveRoom(room, hass) {
+  const s = room.sensors || {}, c = room.controls || {};
+  const temp = numState(hass, s.temp);
+  const humidity = numState(hass, s.humidity);
+  const fanEnt = c.fan || '';
+  const fst = fanEnt && hass && hass.states[fanEnt];
+  const domain = fanEnt ? fanEnt.split('.')[0] : '';
+  return {
+    id: room.id, name: room.name,
+    temp, humidity, co2: numState(hass, s.co2),
+    vpd: vpdJs(temp, humidity, room.leaf_offset),
+    fan: {
+      entity: fanEnt, domain,
+      on: !!fst && fst.state === 'on',
+      isSpeed: domain === 'fan',
+      speed: (fst && fst.attributes && fst.attributes.percentage) || 0,
+    },
+  };
+}
+
 window.GROW = {
   SLOT_CATALOG, PHASES, SEED_SCHEDULES, DEFAULT_BOXES,
   HA_ENTITIES: [],
   PRICE_VALUES: {},
   hoursOn, cyclePattern,
-  deriveBox,
+  deriveBox, vpdJs, deriveRoom,
   // recomputed by the card wrapper whenever hass changes
   refresh(hass) {
     window.GROW.HA_ENTITIES = computeEntities(hass);

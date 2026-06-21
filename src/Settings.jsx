@@ -108,8 +108,9 @@ function BoxEditor({ box, hass, onRename, onDelete, onPatch, onOpen }) {
 }
 
 function Settings({ hass, tab, setTab, t, setTweak, boxes, onAddBox, onDeleteBox, onRenameBox, onPatchConfig,
-  schedules, onSchedulesChange, energy, onEnergyChange, onBack, onOpenBox }) {
-  const tabs = [['boxes', 'Grow boxes', 'potted_plant'], ['schedules', 'Schedules', 'schedule'], ['appearance', 'Appearance', 'tune']];
+  schedules, onSchedulesChange, energy, onEnergyChange, rooms, onRoom, onRoomSensors, onRoomControls,
+  onBack, onOpenBox }) {
+  const tabs = [['boxes', 'Grow boxes', 'potted_plant'], ['schedules', 'Schedules', 'schedule'], ['appearance', 'Appearance', 'tune'], ['room', 'Room', 'home_thermometer']];
   return (
     <div className="fade-in" style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -144,6 +145,25 @@ function Settings({ hass, tab, setTab, t, setTweak, boxes, onAddBox, onDeleteBox
       {tab === 'schedules' && (
         <window.SchedulesPanel schedules={schedules} onChange={onSchedulesChange} />
       )}
+
+      {tab === 'room' && (rooms || []).map((room) => (
+        <div key={room.id} className="card" style={{ padding: '14px 20px 6px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <input className="input" value={room.name} onChange={(e) => onRoom(room.id, { name: e.target.value })}
+            style={{ maxWidth: 320, fontSize: 16, fontWeight: 700 }} />
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase' }}>Climate sensors</div>
+          {[['temp', 'Temperature', ['sensor']], ['humidity', 'Humidity', ['sensor']], ['co2', 'CO2', ['sensor']]].map(([k, label, doms]) => (
+            <Field key={k} label={label}>
+              <window.HaEntityPicker hass={hass} value={(room.sensors || {})[k] || ''} domains={doms} onChange={(v) => onRoomSensors(room.id, { [k]: v })} />
+            </Field>
+          ))}
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', paddingTop: 6 }}>Controls</div>
+          {[['fan', 'Exhaust fan', ['fan', 'switch']], ['dehumidifier', 'Dehumidifier', ['switch', 'humidifier']], ['intake', 'Intake fan', ['fan', 'switch']]].map(([k, label, doms]) => (
+            <Field key={k} label={label}>
+              <window.HaEntityPicker hass={hass} value={(room.controls || {})[k] || ''} domains={doms} onChange={(v) => onRoomControls(room.id, { [k]: v })} />
+            </Field>
+          ))}
+        </div>
+      ))}
 
       {tab === 'appearance' && (
         <div style={{ maxWidth: 460, display: 'flex', flexDirection: 'column', gap: 14 }}>

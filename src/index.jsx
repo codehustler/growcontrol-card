@@ -13,6 +13,7 @@ import './vendor/charts.jsx';
 import './vendor/Overview.jsx';
 import './vendor/BoxDetail.jsx';
 import './vendor/Admin.jsx';
+import './vendor/RoomHero.jsx';
 import './Settings.jsx';
 import './App.jsx';
 import themeCss from './vendor/theme.css';
