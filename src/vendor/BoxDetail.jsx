@@ -168,7 +168,7 @@ function TargetInput({ box, onSetTarget }) {
   );
 }
 
-function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster, onSetPhase, onToggleControl, onRename, onDelete, onSetTarget, onResetEnergy }) {
+function BoxDetail({ box, boxes, schedules, energy, onBack, onConfigure, onToggleMaster, onSetPhase, onToggleControl, onRename, onDelete, onSetTarget, onResetEnergy, onSwitchBox }) {
   const [editName, setEditName] = useStateD(false);
   const [nameVal, setNameVal] = useStateD(box.name);
   const off = !box.master;
@@ -185,11 +185,31 @@ function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster
   const phaseColor = box.phase === 'flowering' ? 'var(--error)' : 'var(--success)';
   const fmtD = (d) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  const boxList = boxes || [];
+  const boxIdx = boxList.findIndex((b) => b.id === box.id);
+  const hasPrev = boxList.length > 1 && boxIdx > 0;
+  const hasNext = boxList.length > 1 && boxIdx < boxList.length - 1;
+  const showSwitcher = boxList.length > 1;
+
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 1100, margin: '0 auto' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         <window.IconBtn icon="arrow_back" title="Back to overview" onClick={onBack} />
+        {showSwitcher && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <button className="icon-btn" title="Previous box" disabled={!hasPrev}
+              onClick={() => hasPrev && onSwitchBox && onSwitchBox(boxList[boxIdx - 1].id)}
+              style={{ opacity: hasPrev ? 1 : 0.3, cursor: hasPrev ? 'pointer' : 'default' }}>
+              <window.Icon name="arrow_back" size={18} />
+            </button>
+            <button className="icon-btn" title="Next box" disabled={!hasNext}
+              onClick={() => hasNext && onSwitchBox && onSwitchBox(boxList[boxIdx + 1].id)}
+              style={{ opacity: hasNext ? 1 : 0.3, cursor: hasNext ? 'pointer' : 'default' }}>
+              <window.Icon name="arrow_back" size={18} style={{ transform: 'scaleX(-1)' }} />
+            </button>
+          </div>
+        )}
         {editName ? (
           <input className="input" autoFocus value={nameVal} onChange={(e) => setNameVal(e.target.value)}
             onBlur={() => { onRename(box.id, nameVal.trim() || box.name); setEditName(false); }}

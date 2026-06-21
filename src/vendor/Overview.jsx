@@ -179,7 +179,7 @@ function BoxCard({ box, schedules, energy, density, onOpen, onToggleMaster }) {
 
       {/* controls footer - cleaner rounded chips */}
       {controls.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 'auto' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {controls.map((c) => {
             const on = !off && c.on;
             const chipColor = on
@@ -215,7 +215,7 @@ function Overview({ boxes, schedules, energy, layout, density, onOpen, onToggleM
     <div style={{
       display: 'grid',
       gridTemplateColumns: layout === 'list' ? '1fr' : 'repeat(auto-fill, minmax(340px, 1fr))',
-      gap: 18, alignContent: 'start',
+      gap: 18, alignContent: 'start', alignItems: 'start',
     }}>
       {boxes.map((b) => (
         <BoxCard key={b.id} box={b} schedules={schedules} energy={energy} density={density}

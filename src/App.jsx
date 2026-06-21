@@ -215,9 +215,10 @@ function App() {
         )}
 
         {view.name === 'box' && current && (
-          <window.BoxDetail box={current} schedules={schedules} energy={energy}
+          <window.BoxDetail box={current} boxes={boxes} schedules={schedules} energy={energy}
             onBack={navBack}
             onConfigure={() => openSettings('boxes')}
+            onSwitchBox={(id) => navOpen({ name: 'box', boxId: id })}
             onToggleMaster={toggleMaster} onSetPhase={setPhase} onToggleControl={toggleControl}
             onRename={rename} onDelete={delBox} onSetTarget={setTarget} onResetEnergy={resetEnergy} />
         )}

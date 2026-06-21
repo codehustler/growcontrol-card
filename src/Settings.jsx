@@ -85,19 +85,10 @@ function BoxEditor({ box, hass, onRename, onDelete, onPatch, onOpen }) {
       </div>
       {open && (
         <div style={{ paddingTop: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', padding: '14px 0 10px' }}>Grow tracking</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-            <Field label="Grow phase (input_select)">
-              <window.HaEntityPicker hass={hass} value={cfg.phaseEntity || ''} domains={['input_select']} onChange={(v) => setExtra('phaseEntity', v)} />
-            </Field>
-            <Field label="Phase start (input_datetime)">
-              <window.HaEntityPicker hass={hass} value={cfg.startEntity || ''} domains={['input_datetime']} onChange={(v) => setExtra('startEntity', v)} />
-            </Field>
-            <Field label="Target temp (input_number)">
-              <window.HaEntityPicker hass={hass} value={cfg.tempTargetEntity || ''} domains={['input_number']} onChange={(v) => setExtra('tempTargetEntity', v)} />
-            </Field>
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', padding: '20px 0 2px' }}>Sensors</div>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '10px 0 14px', fontStyle: 'italic' }}>
+            Grow phase, start date and target temperature are provided automatically by the GrowControl integration.
+          </p>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', padding: '6px 0 2px' }}>Sensors</div>
           {sensors.map((s) => <SlotRow key={s.key} slot={s} cfg={cfg} hass={hass} onSet={setSlot} />)}
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', padding: '20px 0 2px' }}>Controlled devices</div>
           {switches.map((s) => <SlotRow key={s.key} slot={s} cfg={cfg} hass={hass} onSet={setSlot} />)}
