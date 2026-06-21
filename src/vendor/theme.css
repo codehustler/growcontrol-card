@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,1,0');
+/* (also linked in HTML head for fast/reliable load) */
+
+/* =====================================================================
+   GROW BOX MANAGER — dark theme built on Accurids dark-mode tokens
+   ===================================================================== */
+:root {
+  /* brand / accent (accent is overridable by tweaks) */
+  --accent:          #3293FF;
+  --accent-hover:    #4ea2ff;
+  --accent-bg:       rgba(50,147,255,.14);
+  --accent-border:   rgba(50,147,255,.45);
+
+  --cyan:            #00C9FF;
+  --success:         #45D483;
+  --success-bg:      rgba(69,212,131,.14);
+  --warning:         #F7B750;
+  --warning-bg:      rgba(247,183,80,.14);
+  --error:           #F54180;
+  --error-bg:        rgba(245,65,128,.14);
+
+  /* surfaces (LIGHT by default; dark override below follows HA dark mode) */
+  --bg:              #f3f5f7;   /* app canvas */
+  --bg-2:            #e9ecef;   /* recessed wells */
+  --paper:           #ffffff;   /* cards */
+  --paper-2:         #f4f6f8;   /* nested / hover */
+  --disabled-bg:     #e6e9ec;
+
+  /* text */
+  --text:            #1b1e23;
+  --text-2:          #4b525b;
+  --text-3:          #868d96;
+
+  /* borders */
+  --border:          #e4e7eb;
+  --border-2:        #d2d7dd;
+  --border-strong:   #bbc2ca;
+
+  /* mode-dependent helpers */
+  --hover:           rgba(0,0,0,.05);
+  --toggle-off:      #c9ced6;
+  --scrollbar:       #c3c9d0;
+
+  /* shape */
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  /* spacing scale (8px base) */
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s5: 40px; --s6: 48px;
+
+  --shadow-pop: 0 10px 30px -6px rgba(0,0,0,.55), 0 4px 10px -4px rgba(0,0,0,.4);
+
+  --font: 'Open Sans','Helvetica','Arial',sans-serif;
+}
+
+/* Dark mode: applied when the card host carries [data-dark], which the wrapper
+   sets from hass.themes.darkMode so it follows the HA app's light/dark setting. */
+:host([data-dark]) {
+  --bg:              #161616;
+  --bg-2:            #1c1c1c;
+  --paper:           #202020;
+  --paper-2:         #262626;
+  --disabled-bg:     #2a2a2a;
+  --text:            #fafafa;
+  --text-2:          #b6b6b6;
+  --text-3:          #7d7d7d;
+  --border:          #333333;
+  --border-2:        #444444;
+  --border-strong:   #555555;
+  --hover:           rgba(255,255,255,.06);
+  --toggle-off:      #3a3a3a;
+  --scrollbar:       #3a3a3a;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+h1,h2,h3,h4,h5 { margin: 0; font-weight: 700; }
+button { font-family: inherit; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+::-webkit-scrollbar-track { background: transparent; }
+
+.material-icons {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal; font-style: normal; line-height: 1;
+  letter-spacing: normal; text-transform: none; white-space: nowrap;
+  word-wrap: normal; direction: ltr;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-feature-settings: 'liga'; user-select: none;
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: 13.5px; font-weight: 600; letter-spacing: .01em;
+  border-radius: var(--r-md); padding: 8px 15px;
+  border: 1px solid transparent; cursor: pointer; line-height: 1.3;
+  transition: background .15s, border-color .15s, color .15s, transform .05s;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(.5px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn--primary { background: var(--accent); color: #fff; }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--secondary { background: var(--paper-2); color: var(--text); border-color: var(--border-2); }
+.btn--secondary:hover { background: var(--bg-2); border-color: var(--border-strong); }
+.btn--ghost { background: transparent; color: var(--text-2); }
+.btn--ghost:hover { background: var(--hover); color: var(--text); }
+.btn--danger { background: transparent; color: var(--error); border-color: rgba(245,65,128,.4); }
+.btn--danger:hover { background: var(--error-bg); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn .material-icons { font-size: 18px; }
+.btn--sm { padding: 6px 11px; font-size: 12.5px; }
+
+/* ---------- inputs ---------- */
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-3); letter-spacing: .03em; text-transform: uppercase; margin-bottom: 7px; display: block; }
+.input, .select {
+  font: inherit; font-size: 14px; width: 100%;
+  padding: 9px 12px; color: var(--text);
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--r-md); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input::placeholder { color: var(--text-3); }
+.input:hover, .select:hover { border-color: var(--border-strong); }
+.input:focus, .select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.select { appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='%237d7d7d'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat; background-position: right 9px center; padding-right: 36px; }
+
+/* ---------- card ---------- */
+.card { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); }
+
+/* ---------- chip ---------- */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: var(--r-pill);
+  font-size: 12px; font-weight: 600; border: 1px solid var(--border-2); color: var(--text-2); background: var(--paper-2); }
+.chip .material-icons { font-size: 14px; }
+.chip--veg    { background: var(--success-bg); border-color: rgba(69,212,131,.4); color: #6fe0a1; }
+.chip--flower { background: var(--error-bg);   border-color: rgba(245,65,128,.4); color: #ff7aa9; }
+.chip--accent { background: var(--accent-bg);  border-color: var(--accent-border); color: var(--accent-hover); }
+.chip--off    { background: var(--disabled-bg); border-color: var(--border-2); color: var(--text-3); }
+
+/* ---------- icon button ---------- */
+.icon-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md); color: var(--text-2); cursor: pointer; background: transparent; border: 1px solid transparent; transition: background .15s, color .15s, border-color .15s; }
+.icon-btn:hover { background: var(--hover); color: var(--text); }
+.icon-btn .material-icons { font-size: 20px; }
+
+/* ---------- toggle switch ---------- */
+.tgl { position: relative; width: 42px; height: 24px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--toggle-off); transition: background .18s; flex-shrink: 0; padding: 0; }
+.tgl::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #d8d8d8; transition: transform .18s, background .18s; }
+.tgl[data-on="true"] { background: var(--accent); }
+.tgl[data-on="true"]::after { transform: translateX(18px); background: #fff; }
+.tgl[data-on="true"][data-kind="light"] { background: var(--warning); }
+.tgl[data-on="true"][data-kind="success"] { background: var(--success); }
+.tgl:disabled { opacity: .4; cursor: not-allowed; }
+.tgl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* utility */
+.muted { color: var(--text-2); }
+.dim { color: var(--text-3); }
+.mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+.scroll-y { overflow-y: auto; }
+.row { display: flex; align-items: center; }
+.fade-in { animation: fade-in .25s ease both; }
+@keyframes fade-in { from { transform: translateY(7px); } to { transform: none; } }
