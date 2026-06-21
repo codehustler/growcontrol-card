@@ -101,60 +101,65 @@ function RoomHero({ room, onFanToggle, onFanSpeed }) {
         {/* room name heading */}
         <div style={headingStyle}>{room.name}</div>
 
-        {/* temperature gauge */}
-        <window.RadialGauge
-          value={room.temp}
-          min={10}
-          max={40}
-          unit="°C"
-          label="Temp"
-          color="var(--warning)"
-          size={92}
-        />
+        {/* gauges row: gauges spread evenly across available width, right side holds CO2 + fan */}
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* gauges container takes all available space and distributes them evenly */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+            {/* temperature gauge */}
+            <window.RadialGauge
+              value={room.temp}
+              min={10}
+              max={40}
+              unit="°C"
+              label="Temp"
+              color="var(--warning)"
+              size={92}
+            />
 
-        {/* humidity gauge */}
-        <window.RadialGauge
-          value={room.humidity}
-          min={0}
-          max={100}
-          unit="%"
-          label="Humidity"
-          color="var(--accent)"
-          size={92}
-        />
+            {/* humidity gauge */}
+            <window.RadialGauge
+              value={room.humidity}
+              min={0}
+              max={100}
+              unit="%"
+              label="Humidity"
+              color="var(--accent)"
+              size={92}
+            />
 
-        {/* VPD gauge + zone badge stacked compactly */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          <window.RadialGauge
-            value={room.vpd}
-            min={0}
-            max={2.5}
-            unit=" kPa"
-            label="VPD"
-            color={zone.color}
-            size={92}
-          />
-          {zone.label ? <div style={zoneBadgeStyle}>{zone.label}</div> : null}
+            {/* VPD gauge + zone badge stacked compactly */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <window.RadialGauge
+                value={room.vpd}
+                min={0}
+                max={2.5}
+                unit=" kPa"
+                label="VPD"
+                color={zone.color}
+                size={92}
+              />
+              {zone.label ? <div style={zoneBadgeStyle}>{zone.label}</div> : null}
+            </div>
+          </div>
+
+          {/* right-side accessories: CO2 chip (if present) and fan control */}
+          {(room.co2 != null || (f && f.entity)) && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              {room.co2 != null && (
+                <div style={co2ChipStyle}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{room.co2}</span>
+                  <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>ppm CO2</span>
+                </div>
+              )}
+              {f && f.entity && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Fan</span>
+                  <window.FanControl fan={f} onToggle={onFanToggle} onSpeed={onFanSpeed} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* CO2 chip - only rendered when a value is available */}
-        {room.co2 != null && (
-          <div style={co2ChipStyle}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{room.co2}</span>
-            <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>ppm CO2</span>
-          </div>
-        )}
-
-        {/* spacer pushes fan control to the right on wider layouts */}
-        <div style={{ flex: 1, minWidth: 0 }} />
-
-        {/* fan control */}
-        {f && f.entity && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Fan</span>
-            <window.FanControl fan={f} onToggle={onFanToggle} onSpeed={onFanSpeed} />
-          </div>
-        )}
       </div>
     </div>
   );

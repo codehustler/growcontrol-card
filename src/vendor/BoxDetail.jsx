@@ -196,20 +196,6 @@ function BoxDetail({ box, boxes, schedules, energy, onBack, onConfigure, onToggl
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         <window.IconBtn icon="arrow_back" title="Back to overview" onClick={onBack} />
-        {showSwitcher && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <button className="icon-btn" title="Previous box" disabled={!hasPrev}
-              onClick={() => hasPrev && onSwitchBox && onSwitchBox(boxList[boxIdx - 1].id)}
-              style={{ opacity: hasPrev ? 1 : 0.3, cursor: hasPrev ? 'pointer' : 'default' }}>
-              <window.Icon name="arrow_back" size={18} />
-            </button>
-            <button className="icon-btn" title="Next box" disabled={!hasNext}
-              onClick={() => hasNext && onSwitchBox && onSwitchBox(boxList[boxIdx + 1].id)}
-              style={{ opacity: hasNext ? 1 : 0.3, cursor: hasNext ? 'pointer' : 'default' }}>
-              <window.Icon name="arrow_back" size={18} style={{ transform: 'scaleX(-1)' }} />
-            </button>
-          </div>
-        )}
         {editName ? (
           <input className="input" autoFocus value={nameVal} onChange={(e) => setNameVal(e.target.value)}
             onBlur={() => { onRename(box.id, nameVal.trim() || box.name); setEditName(false); }}
@@ -219,7 +205,48 @@ function BoxDetail({ box, boxes, schedules, energy, onBack, onConfigure, onToggl
           <h1 style={{ fontSize: 26, fontWeight: 700, cursor: 'text' }} onClick={() => { setNameVal(box.name); setEditName(true); }}>{box.name}</h1>
         )}
         <window.PhaseChip phase={box.phase} off={off} />
-        <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>· Week {Math.floor(totalDays / 7) + 1} · Day {totalDays % 7 + 1}</span>
+        {showSwitcher && (
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            borderRadius: 'var(--r-pill)',
+            border: '1px solid var(--border)',
+            background: 'var(--paper-2)',
+            overflow: 'hidden',
+          }}>
+            <button
+              title="Previous box"
+              disabled={!hasPrev}
+              onClick={() => hasPrev && onSwitchBox && onSwitchBox(boxList[boxIdx - 1].id)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, background: 'none', border: 'none',
+                cursor: hasPrev ? 'pointer' : 'default',
+                opacity: hasPrev ? 1 : 0.3,
+                color: 'var(--text-2)',
+                borderRight: '1px solid var(--border)',
+              }}>
+              <window.Icon name="arrow_back" size={16} />
+            </button>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-2)', padding: '0 8px', whiteSpace: 'nowrap' }}>
+              {boxIdx + 1} / {boxList.length}
+            </span>
+            <button
+              title="Next box"
+              disabled={!hasNext}
+              onClick={() => hasNext && onSwitchBox && onSwitchBox(boxList[boxIdx + 1].id)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, background: 'none', border: 'none',
+                cursor: hasNext ? 'pointer' : 'default',
+                opacity: hasNext ? 1 : 0.3,
+                color: 'var(--text-2)',
+                borderLeft: '1px solid var(--border)',
+              }}>
+              <window.Icon name="arrow_back" size={16} style={{ transform: 'scaleX(-1)' }} />
+            </button>
+          </div>
+        )}
+        <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>Week {Math.floor(totalDays / 7) + 1} - Day {totalDays % 7 + 1}</span>
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: off ? 'var(--text-3)' : 'var(--success)' }}>{off ? 'OFF' : 'ACTIVE'}</span>
