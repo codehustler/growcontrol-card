@@ -80,22 +80,22 @@ function DurationStat({ label, days, sub, accent }) {
 function PhaseBar({ veg, flower, current }) {
   const total = Math.max(1, veg + flower);
   const rows = [
-    { key: 'vegetative', label: 'Vegetative', days: veg, color: 'var(--success)' },
-    { key: 'flowering', label: 'Flowering', days: flower, color: 'var(--error)' },
+    { key: 'vegetative', label: 'Vegetative', days: veg, color: 'var(--success)', grad: 'var(--grad-veg)' },
+    { key: 'flowering',  label: 'Flowering',  days: flower, color: 'var(--error)',   grad: 'var(--grad-flower)' },
   ];
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ display: 'flex', height: 14, borderRadius: 7, overflow: 'hidden', background: 'var(--bg-2)', border: '1px solid var(--border)' }}>
         {rows.filter((r) => r.days > 0).map((r) => (
           <div key={r.key} title={`${r.label}: ${r.days} days`}
-            style={{ width: (r.days / total * 100) + '%', background: r.color, opacity: r.key === current ? 1 : 0.55,
+            style={{ width: (r.days / total * 100) + '%', background: r.grad, opacity: r.key === current ? 1 : 0.55,
               borderRight: '1px solid var(--bg-2)' }} />
         ))}
       </div>
       <div style={{ display: 'flex', gap: 26, marginTop: 11, flexWrap: 'wrap' }}>
         {rows.map((r) => (
           <div key={r.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: r.color, opacity: r.key === current ? 1 : 0.55 }} />
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: r.grad, opacity: r.key === current ? 1 : 0.55 }} />
             <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{r.label}</span>
             <span style={{ fontSize: 14, fontWeight: 700 }}>{Math.floor(r.days / 7)} w {r.days % 7} d</span>
             {r.key === current && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.05em', color: r.color }}>NOW</span>}
@@ -246,31 +246,53 @@ function BoxDetail({ box, schedules, energy, onBack, onConfigure, onToggleMaster
       </div>
 
       {/* temp chart + side metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: sideMetrics.length ? '1.7fr 1fr' : '1fr', gap: 18, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: sideMetrics.length ? '1.7fr 1fr' : '1fr', gap: 16, alignItems: 'start' }}>
         {tempCfg && (
-          <div className="card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-              <div>
-                <div className="field-label" style={{ marginBottom: 8 }}>Temperature · 24h</div>
-                <div style={{ display: 'flex', gap: 28 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 32, fontWeight: 700, color: (off || box.live.temp == null) ? 'var(--text-3)' : 'var(--warning)' }}>{(off || box.live.temp == null) ? 'N/A' : box.live.temp}</span>
-                      <span style={{ fontSize: 14, color: 'var(--text-2)', fontWeight: 600 }}>°C</span>
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div>
+                  <div className="field-label" style={{ marginBottom: 6 }}>Temperature · 24h</div>
+                  <div style={{ display: 'flex', gap: 22, alignItems: 'flex-end' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{ fontSize: 32, fontWeight: 700, color: (off || box.live.temp == null) ? 'var(--text-3)' : 'var(--warning)' }}>{(off || box.live.temp == null) ? 'N/A' : box.live.temp}</span>
+                        <span style={{ fontSize: 14, color: 'var(--text-2)', fontWeight: 600 }}>°C</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Current</span>
                     </div>
-                    <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Current</span>
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <TargetInput box={box} onSetTarget={onSetTarget} />
-                      <span style={{ fontSize: 14, color: 'var(--text-2)', fontWeight: 600 }}>°C</span>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <TargetInput box={box} onSetTarget={onSetTarget} />
+                        <span style={{ fontSize: 14, color: 'var(--text-2)', fontWeight: 600 }}>°C</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Target</span>
                     </div>
-                    <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Target</span>
+                    {/* VPD readout - computed from live temp + humidity */}
+                    {(() => {
+                      const t = off ? null : box.live.temp;
+                      const h = off ? null : box.live.humidity;
+                      if (t == null || h == null) return null;
+                      const v = window.GROW.vpdJs(t, h, 2);
+                      const phaseKey = box.phase === 'flowering' ? 'Flowering' : 'Vegetative';
+                      const zone = window.GROW.vpdZone(v, phaseKey);
+                      return (
+                        <div style={{ marginLeft: 6 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 28, fontWeight: 700, color: zone.color }}>{v != null ? v.toFixed(2) : 'N/A'}</span>
+                            <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 600 }}>kPa</span>
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: zone.color, textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                            VPD{zone.label ? ' - ' + zone.label : ''}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
             </div>
-            <window.TempChart data={off ? [] : box.live.tempHist} target={box.live.tempTarget} accent="var(--warning)" height={sideMetrics.length ? 286 : 200} />
+            <window.TempChart data={off ? [] : box.live.tempHist} target={box.live.tempTarget} accent="var(--warning)" height={sideMetrics.length ? 280 : 196} />
           </div>
         )}
         {sideMetrics.length > 0 && (

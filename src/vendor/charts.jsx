@@ -6,7 +6,11 @@ function TempChart({ data, target, height, accent, decimals }) {
   const H = height || 180, W = 600, pad = { l: 34, r: 12, t: 12, b: 22 };
   const acc = accent || 'var(--accent)';
   const dec = decimals == null ? 1 : decimals;
-  const gid = useRefC('grad-' + Math.random().toString(36).slice(2)).current;
+  /* stable ids per component instance */
+  const ids = useRefC({
+    grad: 'grad-' + Math.random().toString(36).slice(2),
+    glow: 'glow-' + Math.random().toString(36).slice(2),
+  }).current;
   if (!data || !data.length) {
     return <div style={{ height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 13 }}>No history available</div>;
   }
@@ -15,32 +19,54 @@ function TempChart({ data, target, height, accent, decimals }) {
   const span = max - min || 1;
   const x = (i) => pad.l + (i / (data.length - 1)) * (W - pad.l - pad.r);
   const y = (v) => pad.t + (1 - (v - min) / span) * (H - pad.t - pad.b);
-  const linePts = data.map((v, i) => `${x(i)},${y(v)}`).join(' ');
-  const areaPts = `${pad.l},${y(min)} ${linePts} ${x(data.length - 1)},${y(min)}`;
-  // y gridlines
+  /* smooth cubic bezier path instead of polyline for line + area */
+  const pts = data.map((v, i) => [x(i), y(v)]);
+  const smooth = pts.reduce((d, [px, py], i) => {
+    if (i === 0) return `M${px},${py}`;
+    const [ppx, ppy] = pts[i - 1];
+    const cpx = ppx + (px - ppx) * 0.5;
+    return `${d} C${cpx},${ppy} ${cpx},${py} ${px},${py}`;
+  }, '');
+  const areaPath = `${smooth} L${pts[pts.length - 1][0]},${y(min)} L${pts[0][0]},${y(min)} Z`;
+  /* y gridlines */
   const ticks = 4;
   const gridVals = Array.from({ length: ticks + 1 }, (_, i) => min + (span * i) / ticks);
   const last = data[data.length - 1];
+  const lx = x(data.length - 1), ly = y(last);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height: H, display: 'block' }}>
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={acc} stopOpacity="0.32" />
-          <stop offset="100%" stopColor={acc} stopOpacity="0.02" />
+        {/* richer two-stop area fill using the accent color */}
+        <linearGradient id={ids.grad} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={acc} stopOpacity="0.45" />
+          <stop offset="75%" stopColor={acc} stopOpacity="0.08" />
+          <stop offset="100%" stopColor={acc} stopOpacity="0" />
         </linearGradient>
+        {/* soft glow filter for the latest-point dot */}
+        <filter id={ids.glow} x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="3.5" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
       </defs>
+      {/* subtle horizontal grid lines */}
       {gridVals.map((v, i) => (
         <g key={i}>
-          <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth="1" strokeDasharray="2 4" />
+          <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth="0.8" strokeDasharray="2 5" opacity="0.7" />
           <text x={pad.l - 7} y={y(v) + 3} textAnchor="end" fontSize="10" fill="var(--text-3)">{v.toFixed(dec)}</text>
         </g>
       ))}
+      {/* target temperature line */}
       {target != null && (
         <line x1={pad.l} x2={W - pad.r} y1={y(target)} y2={y(target)} stroke="var(--warning)" strokeWidth="1.5" strokeDasharray="5 4" opacity="0.9" />
       )}
-      <polygon points={areaPts} fill={`url(#${gid})`} />
-      <polyline points={linePts} fill="none" stroke={acc} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={x(data.length - 1)} cy={y(last)} r="3.5" fill={acc} stroke="var(--paper)" strokeWidth="2" />
+      {/* gradient area fill */}
+      <path d={areaPath} fill={`url(#${ids.grad})`} />
+      {/* smooth line */}
+      <path d={smooth} fill="none" stroke={acc} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
+      {/* glow halo behind latest point */}
+      <circle cx={lx} cy={ly} r="8" fill={acc} opacity="0.18" />
+      {/* latest point dot */}
+      <circle cx={lx} cy={ly} r="3.5" fill={acc} stroke="var(--paper)" strokeWidth="2" filter={`url(#${ids.glow})`} />
     </svg>
   );
 }

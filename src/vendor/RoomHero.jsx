@@ -88,7 +88,7 @@ function RoomHero({ room, onFanToggle, onFanSpeed }) {
           value={room.temp}
           min={10}
           max={40}
-          unit=" C"
+          unit="°C"
           label="Temp"
           color="var(--warning)"
           size={124}
