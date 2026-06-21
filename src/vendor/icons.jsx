@@ -30,6 +30,7 @@ const ICONS = {
   eco: (<path fill={cc} d="M19 4c-8 0-13 3.8-13 9.6 0 1.7.6 3.3 1.7 4.6C9.4 13 13 9.6 18 8.2c-4.3 2.3-7.3 5.6-8.6 10.4 1 .3 2 .4 3 .4 7 0 9-6.4 9-15z"/>),
   filter_vintage: (<g fill={cc}>{[0,60,120,180,240,300].map(a=>(<ellipse key={a} cx="12" cy="6.4" rx="2.1" ry="3.7" transform={`rotate(${a} 12 12)`}/>))}<circle cx="12" cy="12" r="2.4" fill="#202020"/><circle cx="12" cy="12" r="1.5"/></g>),
   water_pump: (<g fill={cc}><path d="M5 21V9l4-2v3h6V6l4 2v13z" opacity=".0"/><rect x="5" y="10" width="14" height="11" rx="1.4"/><path d="M9 10V6.5l4-1.5v2.2" fill="none" stroke={cc} strokeWidth="1.8" strokeLinejoin="round"/><circle cx="12" cy="15.5" r="2.6" fill="#202020"/></g>),
+  home_thermometer: (<g fill="none" stroke={cc} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" fill={cc} fillOpacity=".10"/><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><rect x="10.3" y="8" width="3.4" height="8.6" rx="1.7" fill="none"/><circle cx="12" cy="17.8" r="2.4" fill={cc} stroke="none"/><rect x="11.1" y="10.5" width="1.8" height="6" rx=".9" fill={cc} stroke="none"/></g>),
 };
 
 function renderIcon(name) { return ICONS[name] || ICONS.info; }
