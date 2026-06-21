@@ -163,6 +163,15 @@ function vpdJs(t, h, offset) {
   return Math.max(0, Math.round((svp(t - (offset ?? 2)) - svp(t) * (h / 100)) * 100) / 100);
 }
 
+function vpdZone(v, phase) {
+  if (v == null) return { label: '', color: 'var(--text-3)' };
+  const lo = phase === 'Flowering' ? 1.2 : 0.8;
+  const hi = phase === 'Flowering' ? 1.6 : 1.1;
+  if (v < lo) return { label: 'Too humid', color: 'var(--vpd-low)' };
+  if (v > hi) return { label: 'Too dry', color: 'var(--vpd-high)' };
+  return { label: 'Ideal', color: 'var(--vpd-ideal)' };
+}
+
 function deriveRoom(room, hass) {
   const s = room.sensors || {}, c = room.controls || {};
   const temp = numState(hass, s.temp);
@@ -188,7 +197,7 @@ window.GROW = {
   HA_ENTITIES: [],
   PRICE_VALUES: {},
   hoursOn, cyclePattern,
-  deriveBox, vpdJs, deriveRoom,
+  deriveBox, vpdJs, deriveRoom, vpdZone,
   // recomputed by the card wrapper whenever hass changes
   refresh(hass) {
     window.GROW.HA_ENTITIES = computeEntities(hass);
